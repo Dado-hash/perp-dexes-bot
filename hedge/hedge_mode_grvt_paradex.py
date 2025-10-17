@@ -415,6 +415,56 @@ class HedgeBot:
 
         return False
 
+    async def place_order_with_auto_reprice(self, side: str, quantity: Decimal) -> str:
+        """
+        Place GRVT order with automatic repricing until filled.
+
+        This function will:
+        1. Place a limit order at competitive price (best_ask - tick for buy, best_bid + tick for sell)
+        2. Wait for fill with configured timeout
+        3. If not filled: automatically cancel and replace order at new market price
+        4. Repeat until order is filled
+
+        Args:
+            side: 'buy' or 'sell'
+            quantity: Order quantity
+
+        Returns:
+            order_id: The ID of the filled order
+        """
+        attempt = 0
+
+        while True:
+            attempt += 1
+
+            # Log attempt
+            if attempt == 1:
+                self.logger.info(f"🎯 Placing {side.upper()} order for {quantity} on GRVT...")
+            else:
+                self.logger.warning(f"🔄 Attempt #{attempt}: Repricing and replacing {side.upper()} order...")
+
+            # Place order at current market price
+            order_id = await self.place_grvt_open_order(side, quantity)
+
+            if not order_id:
+                self.logger.error(f"❌ Failed to place GRVT order on attempt #{attempt}, retrying in 1s...")
+                await asyncio.sleep(1)
+                continue
+
+            # Wait for fill
+            filled = await self.wait_for_grvt_fill(order_id, timeout=self.fill_timeout)
+
+            if filled:
+                self.logger.info(f"✅ Order filled after {attempt} attempt(s)")
+                return order_id
+
+            # Not filled - wait_for_grvt_fill already cancelled the order
+            self.logger.warning(f"⏱️ Order {order_id} not filled after {self.fill_timeout}s (attempt #{attempt})")
+            self.logger.info(f"🔄 Will reprice and replace order at current market price...")
+
+            # Small delay before repricing
+            await asyncio.sleep(0.5)
+
     async def trading_loop(self):
         """Main trading loop implementing the hedge strategy."""
         self.logger.info(f"🚀 Starting GRVT-Paradex hedge bot for {self.ticker}")
@@ -475,20 +525,10 @@ class HedgeBot:
                 break
 
             try:
-                # STEP 1: Open position on GRVT (maker order)
+                # STEP 1: Open position on GRVT (maker order with auto-repricing)
                 self.logger.info("[STEP 1] Opening position on GRVT...")
-                grvt_order_id = await self.place_grvt_open_order('buy', self.order_quantity)
-
-                if not grvt_order_id:
-                    self.logger.error("❌ Failed to place GRVT order")
-                    break
-
-                # Wait for GRVT order to FILL (polling with timeout)
-                grvt_filled = await self.wait_for_grvt_fill(grvt_order_id, timeout=self.fill_timeout)
-
-                if not grvt_filled:
-                    self.logger.error("❌ GRVT order was not filled, skipping iteration")
-                    continue  # Skip to next iteration
+                grvt_order_id = await self.place_order_with_auto_reprice('buy', self.order_quantity)
+                # Note: place_order_with_auto_reprice automatically retries until filled
 
                 # STEP 2: Immediately hedge on Paradex with MARKET order
                 self.logger.info("[STEP 2] 🚀 GRVT filled! Immediately hedging on Paradex with MARKET order...")
@@ -502,20 +542,10 @@ class HedgeBot:
                 # Market orders fill immediately, just wait a moment
                 await asyncio.sleep(1)
 
-                # STEP 3: Close position on GRVT
+                # STEP 3: Close position on GRVT (maker order with auto-repricing)
                 self.logger.info("[STEP 3] Closing position on GRVT...")
-                grvt_close_id = await self.place_grvt_open_order('sell', self.order_quantity)
-
-                if not grvt_close_id:
-                    self.logger.error("❌ Failed to close GRVT position")
-                    break
-
-                # Wait for GRVT close order to fill
-                grvt_close_filled = await self.wait_for_grvt_fill(grvt_close_id, timeout=self.fill_timeout)
-
-                if not grvt_close_filled:
-                    self.logger.error("❌ GRVT close order was not filled")
-                    continue
+                grvt_close_id = await self.place_order_with_auto_reprice('sell', self.order_quantity)
+                # Note: place_order_with_auto_reprice automatically retries until filled
 
                 # STEP 4: Close Paradex hedge with MARKET order
                 self.logger.info("[STEP 4] 🚀 Closing Paradex hedge with MARKET order...")

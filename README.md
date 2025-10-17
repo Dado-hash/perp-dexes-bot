@@ -1,87 +1,77 @@
-##### 关注我 **X (Twitter)**: [@yourQuantGuy](https://x.com/yourQuantGuy)
+##### Follow Me - **X (Twitter)**: [@yourQuantGuy](https://x.com/yourQuantGuy)
+
+## 📢 Sharing Notice
+
+**Sharing is encouraged!** If you share or modify this code, please include attribution to the original repository. We encourage the growth of the open-source community, but please maintain respect and recognition for the original author's work.
 
 ---
 
-**English speakers**: Please read README_EN.md for the English version of this documentation.
+## Multi-Exchange Trading Bot
 
-## 📢 分享说明
+A modular trading bot that supports multiple exchanges including EdgeX, Backpack, Paradex, Aster, Lighter, GRVT, and Extended. The bot implements an automated strategy that places orders and automatically closes them at a profit.
 
-**欢迎分享本项目！** 如果您要分享或修改此代码，请务必包含对原始仓库的引用。我们鼓励开源社区的发展，但请保持对原作者工作的尊重和认可。
-
----
-
-## 自动交易机器人
-
-一个支持多个交易所（目前包括 EdgeX, Backpack, Paradex, Aster, Lighter, grvt, Extended）的模块化交易机器人。该机器人实现了自动下单并在盈利时自动平仓的策略，主要目的是取得高交易量。
-
-## 邀请链接 (获得返佣以及福利)
+## Referral Links (Enjoy fee rebates and benefits)
 
 #### EdgeX: [https://pro.edgex.exchange/referral/QUANT](https://pro.edgex.exchange/referral/QUANT)
 
-永久享受 VIP 1 费率；额外 10% 手续费返佣；10% 额外奖励积分
+Instant VIP 1 Trading Fees; 10% Fee Rebate; 10% Bonus Points
 
 #### Backpack: [https://backpack.exchange/join/quant](https://backpack.exchange/join/quant)
 
-使用我的推荐链接获得 35% 手续费返佣
+You will get 35% fee rebates on all your trading fees
 
 #### Paradex: [https://app.paradex.trade/r/quant](https://app.paradex.trade/r/quant)
 
-使用我的推荐链接获得 10% 手续费返佣以及潜在未来福利
+You will get 10% taker fee discount rebates and potential future benefits
 
 #### Aster: [https://www.asterdex.com/zh-CN/referral/5191B1](https://www.asterdex.com/zh-CN/referral/5191B1)
 
-使用我的推荐链接获得 30% 手续费返佣以及积分加成
+You will get 30% fee rebates and points boost
 
 #### grvt: [https://grvt.io/exchange/sign-up?ref=QUANT](https://grvt.io/exchange/sign-up?ref=QUANT)
-
-获得 1.3x 全网最高的积分加成，未来的手续费返佣（官方预计 10 月中上线），以及即将开始的专属交易竞赛
+You will get 1.3x points boost; rebates (auto rebates system is expected to be launched in mid-Oct); access to private trading competition
 
 #### Extended: [https://app.extended.exchange/join/QUANT](https://app.extended.exchange/join/QUANT)
-10%的即时手续费减免；积分加成（官方未公布具体加成公式，但文档里有明确说明，通过官方大使邀请能拿到比自己小号邀请自己更多的分数）；参与社群的专属交易量大赛，奖池高达$70000，10月15日结束
+10% fee discount; points boost (black box, but "you will get more points from affiliate referral program than using another account to refer yourself" quoted from the official documentation from Extended); access to private trading competition
 
-## 安装
 
-Python 版本要求（最佳选项是 Python 3.10 - 3.12）：
+## Installation
 
-- grvt 要求 python 版本在 3.10 及以上
-- Paradex 要求 python 版本在 3.9 - 3.12
-- 其他交易所需要 python 版本在 3.8 及以上
-
-1. **克隆仓库**：
+1. **Clone the repository**:
 
    ```bash
    git clone <repository-url>
    cd perp-dex-tools
    ```
 
-2. **创建并激活虚拟环境**：
+2. **Create and activate virtual environment**:
 
-   首先确保你目前不在任何虚拟环境中：
+   First, make sure you are not currently in any virtual environment:
 
    ```bash
    deactivate
    ```
 
-   创建虚拟环境：
+   Create virtual environment:
 
    ```bash
    python3 -m venv env
    ```
 
-   激活虚拟环境（每次使用脚本时，都需要激活虚拟环境）：
+   Activate virtual environment (you need to activate the virtual environment every time you use the script):
 
    ```bash
-   source env/bin/activate  # Windows: env\Scripts\activate
+   source venv/bin/activate  # Windows: venv\Scripts\activate
    ```
 
-3. **安装依赖**：
-   首先确保你目前不在任何虚拟环境中：
+3. **Install dependencies**:
+   First, make sure you are not currently in any virtual environment:
 
    ```bash
    deactivate
    ```
 
-   激活虚拟环境（每次使用脚本时，都需要激活虚拟环境）：
+   Activate virtual environment (you need to activate the virtual environment every time you use the script):
 
    ```bash
    source env/bin/activate  # Windows: env\Scripts\activate
@@ -91,343 +81,324 @@ Python 版本要求（最佳选项是 Python 3.10 - 3.12）：
    pip install -r requirements.txt
    ```
 
-   **grvt 用户**：如果您想使用 grvt 交易所，需要额外安装 grvt 专用依赖：
-   激活虚拟环境（每次使用脚本时，都需要激活虚拟环境）：
+   **Paradex Users**: If you want to use Paradex exchange, you need to create an additional virtual environment and install Paradex-specific dependencies:
 
-   ```bash
-   source env/bin/activate  # Windows: env\Scripts\activate
-   ```
-
-   ```bash
-   pip install grvt-pysdk
-   ```
-
-   **Paradex 用户**：如果您想使用 Paradex 交易所，需要额外创建一个虚拟环境并安装 Paradex 专用依赖：
-
-   首先确保你目前不在任何虚拟环境中：
+   First, make sure you are not currently in any virtual environment:
 
    ```bash
    deactivate
    ```
 
-   创建 Paradex 专用的虚拟环境（名称为 para_env）：
+   Create a dedicated virtual environment for Paradex (named para_env):
 
    ```bash
    python3 -m venv para_env
    ```
 
-   激活虚拟环境（每次使用脚本时，都需要激活虚拟环境）：
+   Activate virtual environment (you need to activate the virtual environment every time you use the script):
 
    ```bash
    source para_env/bin/activate  # Windows: para_env\Scripts\activate
    ```
 
-   安装 Paradex 依赖
+   Install Paradex dependencies
 
    ```bash
    pip install -r para_requirements.txt
    ```
 
-4. **设置环境变量**：
-   在项目根目录创建`.env`文件，并使用 env_example.txt 作为样本，修改为你的 api 密匙。
+4. **Set up environment variables**:
+   Create a `.env` file in the project root directory and use env_example.txt as a template to modify with your API keys.
 
-5. **Telegram 机器人设置（可选）**：
-   如需接收交易通知，请参考 [Telegram 机器人设置指南](docs/telegram-bot-setup.md) 配置 Telegram 机器人。
+5. **Telegram Bot Setup (Optional)**:
+   To receive trading notifications, please refer to the [Telegram Bot Setup Guide](docs/telegram-bot-setup-en.md) to configure your Telegram bot.
 
-## 策略概述
+## Strategy Overview
 
-**重要提醒**：大家一定要先理解了这个脚本的逻辑和风险，这样你就能设置更适合你自己的参数，或者你也可能觉得这不是一个好策略，根本不想用这个策略来刷交易量。我在推特也说过，我不是为了分享而写这些脚本，而是我真的在用这个脚本，所以才写了，然后才顺便分享出来。
-这个脚本主要还是要看长期下来的磨损，只要脚本持续开单，如果一个月后价格到你被套的最高点，那么你这一个月的交易量就都是零磨损的了。所以我认为如果把`--quantity`和`--wait-time`设置的太小，并不是一个好的长期的策略，但确实适合短期内高强度冲交易量。我自己一般用 40 到 60 的 quantity，450 到 650 的 wait-time，以此来保证即使市场和你的判断想法，脚本依然能够持续稳定地下单，直到价格回到你的开单点，实现零磨损刷了交易量。
+**Important Notice**: Everyone must first understand the logic and risks of this script so you can set parameters that are more suitable for yourself, or you might think this is not a good strategy and don't want to use it at all. As I mentioned on Twitter, I didn't write these scripts for sharing purposes, but because I'm actually using this script myself, so I wrote it, and then shared it.
+This script mainly focuses on long-term wear and tear. As long as the script continues to place orders, if the price reaches your highest trapped point after a month, then all your trading volume for that month will be zero-wear. Therefore, I believe that setting `--quantity` and `--wait-time` too small is not a good long-term strategy, but it is indeed suitable for short-term high-intensity volume trading. I usually use quantity between 40-60 and wait-time between 450-650 to ensure that even if the market goes against your judgment, the script can still place orders continuously and stably until the price returns to your entry point, achieving zero-wear volume trading.
 
-该机器人实现了简单的交易策略：
+The bot implements a simple trading strategy:
 
-1. **订单下单**：在市场价格附近下限价单
-2. **订单监控**：等待订单成交
-3. **平仓订单**：在止盈水平自动下平仓单
-4. **持仓管理**：监控持仓和活跃订单
-5. **风险管理**：限制最大并发订单数
-6. **网格步长控制**：通过 `--grid-step` 参数控制新订单与现有平仓订单之间的最小价格距离
-7. **停止交易控制**：通过 `--stop-price` 参数控制停止交易的的价格条件
+1. **Order Placement**: Places limit orders near the current market price
+2. **Order Monitoring**: Waits for orders to be filled
+3. **Close Order**: Automatically places close orders at the take-profit level
+4. **Position Management**: Monitors positions and active orders
+5. **Risk Management**: Limits maximum number of concurrent orders
+6. **Grid Step Control**: Controls minimum price distance between new orders and existing close orders via `--grid-step` parameter
+7. **Stop Trading Control**: Controls the price conditions for stopping transactions through the `--stop-price` parameter
 
-#### ⚙️ 关键参数
+#### ⚙️ Key Parameters
 
-- **quantity**: 每笔订单的交易数量
-- **direction**: 脚本交易的方向，buy 表示看多，sell 表示看空
-- **take-profit**: 止盈百分比（如 0.02 表示 0.02%）
-- **max-orders**: 最大同时活跃订单数（风险控制）
-- **wait-time**: 订单间等待时间（避免过于频繁交易）
-- **grid-step**: 网格步长控制（防止平仓订单过于密集）
-- **stop-price**: 当市场价格达到该价格时退出脚本
-- **pause-price**: 当市场价格达到该价格时暂停脚本
+- **quantity**: Trading amount per order
+- **take-profit**: Take-profit percentage (e.g., 0.02 means 0.02%)
+- **max-orders**: Maximum concurrent active orders (risk control)
+- **wait-time**: Wait time between orders (prevents overtrading)
+- **grid-step**: Grid step control (prevents close orders from being too dense)
+- **stop-price**: When `direction` is 'buy', exit when price >= stop-price; 'sell' logic is opposite (default: -1, no price-based termination)
+- **pause-price**: When `direction` is 'buy', pause when price >= pause-price; 'sell' logic is opposite (default: -1, no price-based pausing)
 
-#### 网格步长功能详解
+#### Grid Step Feature
 
-`--grid-step` 参数用于控制新订单的平仓价格与现有平仓订单之间的最小距离：
+The `--grid-step` parameter controls the minimum distance between new order close prices and existing close order prices:
 
-- **默认值 -100**：无网格步长限制，按原策略执行
-- **正值（如 0.5）**：新订单的平仓价格必须与最近的平仓订单价格保持至少 0.5% 的距离
-- **作用**：防止平仓订单过于密集，提高成交概率和风险管理
+- **Default -100**: No grid step restriction, executes original strategy
+- **Positive value (e.g., 0.5)**: New order close price must maintain at least 0.5% distance from the nearest close order price
+- **Purpose**: Prevents close orders from being too dense, improving fill probability and risk management
 
-例如，当看多且 `--grid-step 0.5` 时：
+For example, when Long and `--grid-step 0.5`:
 
-- 如果现有平仓订单价格为 2000 USDT
-- 新订单的平仓价格必须低于 1990 USDT（2000 × (1 - 0.5%)）
-- 这样可以避免平仓订单过于接近，提高整体策略效果
+- If existing close order price is 2000 USDT
+- New order close price must be lower than 1990 USDT (2000 × (1 - 0.5%))
+- This prevents close orders from being too close together, improving overall strategy effectiveness
 
-#### 📊 交易流程示例
+#### 📊 Trading Flow Example
 
-假设当前 ETH 价格为 $2000，设置止盈为 0.02%：
+Assuming current ETH price is $2000 with take-profit set to 0.02%:
 
-1. **开仓**：在 $2000.40 下买单（略高于市价）
-2. **成交**：订单被市场成交，获得多头仓位
-3. **平仓**：立即在 $2000.80 下卖单（止盈价格）
-4. **完成**：平仓单成交，获得 0.02% 利润
-5. **重复**：继续下一轮交易
+1. **Open Position**: Places buy order at $2000.40 (slightly above market price)
+2. **Fill**: Order gets filled by the market, acquiring long position
+3. **Close Position**: Immediately places sell order at $2000.80 (take-profit price)
+4. **Complete**: Close order gets filled, earning 0.02% profit
+5. **Repeat**: Continues to the next trading cycle
 
-#### 🛡️ 风险控制
+#### 🛡️ Risk Management
 
-- **订单限制**：通过 `max-orders` 限制最大并发订单数
-- **网格控制**：通过 `grid-step` 确保平仓订单有合理间距
-- **下单频率控制**：通过 `wait-time` 确保下单的时间间隔，防止短时间内被套
-- **实时监控**：持续监控持仓和订单状态
-- **⚠️ 无止损机制**：此策略不包含止损功能，在不利市场条件下可能面临较大损失
+- **Order Limits**: Limits maximum concurrent orders via `max-orders`
+- **Grid Control**: Ensures reasonable spacing between close orders via `grid-step`
+- **Order Frequency Control**: Controls order timing via `wait-time` to prevent being trapped in short periods
+- **Real-time Monitoring**: Continuously monitors positions and order status
+- **⚠️ No Stop Loss**: This strategy does not include stop-loss functionality and may face significant losses in adverse market conditions
 
-## 示例命令：
+## Sample commands:
 
-### EdgeX 交易所：
+### EdgeX Exchange:
 
-ETH：
+ETH:
 
 ```bash
 python runbot.py --exchange edgex --ticker ETH --quantity 0.1 --take-profit 0.02 --max-orders 40 --wait-time 450
 ```
 
-ETH（带网格步长控制）：
+ETH (with grid step control):
 
 ```bash
 python runbot.py --exchange edgex --ticker ETH --quantity 0.1 --take-profit 0.02 --max-orders 40 --wait-time 450 --grid-step 0.5
 ```
 
-ETH（带停止交易的价格控制）：
+ETH (with stop price control):
 
 ```bash
 python runbot.py --exchange edgex --ticker ETH --quantity 0.1 --take-profit 0.02 --max-orders 40 --wait-time 450 --stop-price 5500
 ```
 
-BTC：
+BTC:
 
 ```bash
 python runbot.py --exchange edgex --ticker BTC --quantity 0.05 --take-profit 0.02 --max-orders 40 --wait-time 450
 ```
 
-### Backpack 交易所：
+### Backpack Exchange:
 
-ETH 永续合约：
+ETH Perpetual:
 
 ```bash
 python runbot.py --exchange backpack --ticker ETH --quantity 0.1 --take-profit 0.02 --max-orders 40 --wait-time 450
 ```
 
-ETH 永续合约（带网格步长控制）：
+ETH Perpetual (with grid step control):
 
 ```bash
 python runbot.py --exchange backpack --ticker ETH --quantity 0.1 --take-profit 0.02 --max-orders 40 --wait-time 450 --grid-step 0.3
 ```
 
-ETH 永续合约（启用 Boost 模式）：
+ETH Perpetual (with Boost mode enabled):
 
 ```bash
 python runbot.py --exchange backpack --ticker ETH --direction buy --quantity 0.1 --boost
 ```
 
-### Aster 交易所：
+### Aster Exchange:
 
-ETH：
+ETH:
 
 ```bash
 python runbot.py --exchange aster --ticker ETH --quantity 0.1 --take-profit 0.02 --max-orders 40 --wait-time 450
 ```
 
-ETH（启用 Boost 模式）：
+ETH (with Boost mode enabled):
 
 ```bash
 python runbot.py --exchange aster --ticker ETH --direction buy --quantity 0.1 --boost
 ```
 
-### GRVT 交易所：
+### GRVT Exchange:
 
-BTC：
+BTC:
 
 ```bash
 python runbot.py --exchange grvt --ticker BTC --quantity 0.05 --take-profit 0.02 --max-orders 40 --wait-time 450
 ```
 
-### Extended 交易所：
+### Extended Exchange:
 
-ETH：
+ETH:
 
 ```bash
-python runbot.py --exchange extended --ticker ETH --quantity 0.1 --take-profit 0 --max-orders 40 --wait-time 450 --grid-step 0.1
+python runbot.py --exchange extended --ticker ETH --quantity 0.1 --take-profit 0 --max-orders 40 --wait-time 450 --grid-step 0.01
 ```
 
-## 🆕 对冲模式 (Hedge Mode)
+## 🆕 Hedge Mode
 
-新增的对冲模式 (`hedge_mode.py`) 是一个新的交易策略，通过同时在两个交易所进行对冲交易来降低风险：
+The new Hedge Mode (`hedge_mode.py`) is an trading strategy that reduces risk by simultaneously hedging trades across two exchanges:
 
-### 对冲模式工作原理
+### How Hedge Mode Works
 
-1. **开仓阶段**：在选定交易所（如 Backpack）下 maker 订单
-2. **对冲阶段**：订单成交后，立即在 Lighter 下市价订单进行对冲
-3. **平仓阶段**：在选定交易所下另一个 maker 订单平仓
-4. **对冲平仓**：在 Lighter 下市价订单平仓
+1. **Opening Phase**: Place maker order at selected exchange (e.g., Backpack)
+2. **Hedging Phase**: After order fills, immediately place market order at Lighter to hedge
+3. **Closing Phase**: Place another maker order at selected exchange to close position
+4. **Hedge Closing**: Place market order at Lighter to close hedge position
 
-### 对冲模式优势
-
-- **风险降低**：通过同时持有相反头寸，降低单边市场风险
-- **交易量提升**：在两个交易所同时产生交易量
-- **套利机会**：利用两个交易所之间的价差
-- **自动化执行**：全自动化的对冲交易流程
-
-### 对冲模式使用示例
+### Hedge Mode Usage Examples
 
 ```bash
-# 运行 BTC 对冲模式
+# Run BTC hedge mode
 python hedge_mode.py --exchange backpack --ticker BTC --size 0.05 --iter 20
 
-# 运行 ETH 对冲模式
+# Run ETH hedge mode
 python hedge_mode.py --exchange backpack --ticker ETH --size 0.1 --iter 20
 ```
 
-### 对冲模式参数
+### Hedge Mode Parameters
 
-- `--exchange`: 主要交易所（目前支持 'backpack'）
-- `--ticker`: 交易对符号（如 BTC, ETH）
-- `--size`: 每笔订单数量
-- `--iter`: 交易循环次数
-- `--fill-timeout`: maker 订单填充超时时间（秒，默认 5）
+- `--exchange`: Primary exchange (currently supports 'backpack')
+- `--ticker`: Trading pair symbol (e.g., BTC, ETH)
+- `--size`: Order quantity per trade
+- `--iter`: Number of trading cycles
+- `--fill-timeout`: Maker order fill timeout in seconds (default: 5)
 
-## 配置
+## Configuration
 
-### 环境变量
+### Environment Variables
 
-#### 通用配置
+#### General Configuration
 
-- `ACCOUNT_NAME`: 环境变量中当前账号的名称，用于多账号日志区分，可自定义，非必须
+- `ACCOUNT_NAME`: The name of the current account in the environment variable, used for distinguishing between multiple account logs, customizable, not mandatory
 
-#### Telegram 配置（可选）
+#### Telegram Configuration (Optional)
 
-- `TELEGRAM_BOT_TOKEN`: Telegram 机器人令牌
-- `TELEGRAM_CHAT_ID`: Telegram 对话 ID
+- `TELEGRAM_BOT_TOKEN`: Telegram bot token
+- `TELEGRAM_CHAT_ID`: Telegram chat ID
 
-#### EdgeX 配置
+#### EdgeX Configuration
 
-- `EDGEX_ACCOUNT_ID`: 您的 EdgeX 账户 ID
-- `EDGEX_STARK_PRIVATE_KEY`: 您的 EdgeX API 私钥
-- `EDGEX_BASE_URL`: EdgeX API 基础 URL（默认：https://pro.edgex.exchange）
-- `EDGEX_WS_URL`: EdgeX WebSocket URL（默认：wss://quote.edgex.exchange）
+- `EDGEX_ACCOUNT_ID`: Your EdgeX account ID
+- `EDGEX_STARK_PRIVATE_KEY`: Your EdgeX api private key
+- `EDGEX_BASE_URL`: EdgeX API base URL (default: https://pro.edgex.exchange)
+- `EDGEX_WS_URL`: EdgeX WebSocket URL (default: wss://quote.edgex.exchange)
 
-#### Backpack 配置
+#### Backpack Configuration
 
-- `BACKPACK_PUBLIC_KEY`: 您的 Backpack API Key
-- `BACKPACK_SECRET_KEY`: 您的 Backpack API Secret
+- `BACKPACK_PUBLIC_KEY`: Your Backpack API key
+- `BACKPACK_SECRET_KEY`: Your Backpack API Secret
 
-#### Paradex 配置
+#### Paradex Configuration
 
-- `PARADEX_L1_ADDRESS`: L1 钱包地址
-- `PARADEX_L2_PRIVATE_KEY`: L2 钱包私钥（点击头像，钱包，"复制 paradex 私钥"）
+- `PARADEX_L1_ADDRESS`: L1 wallet address
+- `PARADEX_L2_PRIVATE_KEY`: L2 wallet private key (click avatar, wallet, "copy paradex private key")
 
-#### Aster 配置
+#### Aster Configuration
 
-- `ASTER_API_KEY`: 您的 Aster API Key
-- `ASTER_SECRET_KEY`: 您的 Aster API Secret
+- `ASTER_API_KEY`: Your Aster API Key
+- `ASTER_SECRET_KEY`: Your Aster API Secret
 
-#### Lighter 配置
+#### Lighter Configuration
 
-- `API_KEY_PRIVATE_KEY`: Lighter API 私钥
-- `LIGHTER_ACCOUNT_INDEX`: Lighter 账户索引
-- `LIGHTER_API_KEY_INDEX`: Lighter API 密钥索引
+- `API_KEY_PRIVATE_KEY`: Your Lighter API private key
+- `LIGHTER_ACCOUNT_INDEX`: Lighter account index
+- `LIGHTER_API_KEY_INDEX`: Lighter API key index
 
-#### GRVT 配置
+#### GRVT Configuration
 
-- `GRVT_TRADING_ACCOUNT_ID`: 您的 GRVT 交易账户 ID
-- `GRVT_PRIVATE_KEY`: 您的 GRVT 私钥
-- `GRVT_API_KEY`: 您的 GRVT API 密钥
+- `GRVT_TRADING_ACCOUNT_ID`: Your GRVT trading account ID
+- `GRVT_PRIVATE_KEY`: Your GRVT private key
+- `GRVT_API_KEY`: Your GRVT API key
 
-#### Extended 配置
+#### Extended Configuration
 
-- `EXTENDED_API_KEY`: Extended API Key
-- `EXTENDED_STARK_KEY_PUBLIC`: 创建API后显示的 Stark 公钥
-- `EXTENDED_STARK_KEY_PRIVATE`: 创建API后显示的 Stark 私钥
-- `EXTENDED_VAULT`: 创建API后显示的 Extended Vault ID
+- `EXTENDED_API_KEY`: Your Extended API key
+- `EXTENDED_STARK_KEY_PUBLIC`: Your Stark public key
+- `EXTENDED_STARK_KEY_PRIVATE`: Your Stark private key
+- `EXTENDED_VAULT`: Your Extended Vault ID
 
-**获取 LIGHTER_ACCOUNT_INDEX 的方法**：
+**How to get LIGHTER_ACCOUNT_INDEX**:
 
-1. 在下面的网址最后加上你的钱包地址：
+1. Add your wallet address to the end of the following URL:
 
    ```
    https://mainnet.zklighter.elliot.ai/api/v1/account?by=l1_address&value=
    ```
 
-2. 在浏览器中打开这个网址
+2. Open this URL in your browser
 
-3. 在结果中搜索 "account_index" - 如果你有子账户，会有多个 account_index，短的那个是你主账户的，长的是你的子账户。
+3. Search for "account_index" in the results - if you have subaccounts, there will be multiple account_index values. The shorter one is your main account, and the longer ones are your subaccounts.
 
-### 命令行参数
+### Command Line Arguments
 
-- `--exchange`: 使用的交易所：'edgex'、'backpack'、'paradex'、'aster'、'lighter'、'grvt' 或 'extended'（默认：edgex）
-- `--ticker`: 标的资产符号（例如：ETH、BTC、SOL）。合约 ID 自动解析。
-- `--quantity`: 订单数量（默认：0.1）
-- `--take-profit`: 止盈百分比（例如 0.02 表示 0.02%）
-- `--direction`: 交易方向：'buy'或'sell'（默认：buy）
-- `--env-file`: 账户配置文件 (默认：.env)
-- `--max-orders`: 最大活跃订单数（默认：40）
-- `--wait-time`: 订单间等待时间（秒）（默认：450）
-- `--grid-step`: 与下一个平仓订单价格的最小距离百分比（默认：-100，表示无限制）
-- `--stop-price`: 当 `direction` 是 'buy' 时，当 price >= stop-price 时停止交易并退出程序；'sell' 逻辑相反（默认：-1，表示不会因为价格原因停止交易），参数的目的是防止订单被挂在”你认为的开多高点或开空低点“。
-- `--pause-price`: 当 `direction` 是 'buy' 时，当 price >= pause-price 时暂停交易，并在价格回到 pause-price 以下时重新开始交易；'sell' 逻辑相反（默认：-1，表示不会因为价格原因停止交易），参数的目的是防止订单被挂在”你认为的开多高点或开空低点“。
-- `--boost`: 启用 Boost 模式进行交易量提升（仅适用于 aster 和 backpack 交易所）
-  Boost 模式的下单逻辑：下 maker 单开仓，成交后立即用 taker 单关仓，以此循环。磨损为一单 maker，一单 taker 的手续费，以及滑点。
+- `--exchange`: Exchange to use: 'edgex', 'backpack', 'paradex', 'aster', 'lighter', 'grvt', or 'extended' (default: edgex)
+- `--ticker`: Base asset symbol (e.g., ETH, BTC, SOL). Contract ID is auto-resolved.
+- `--quantity`: Order quantity (default: 0.1)
+- `--take-profit`: Take profit percent (e.g., 0.02 means 0.02%)
+- `--direction`: Trading direction: 'buy' or 'sell' (default: buy)
+- `--env-file`: Account configuration file (default: .env)
+- `--max-orders`: Maximum number of active orders (default: 40)
+- `--wait-time`: Wait time between orders in seconds (default: 450)
+- `--grid-step`: Minimum distance in percentage to the next close order price (default: -100, means no restriction)
+- `--stop-price`: When `direction` is 'buy', stop trading and exit the program when price >= stop-price; 'sell' logic is opposite (default: -1, no price-based termination). The purpose of this parameter is to prevent orders from being placed at "high points for long positions or low points for short positions that you consider".
+- `--pause-price`: When `direction` is 'buy', pause trading when price >= pause-price and resume trading when price falls back below pause-price; 'sell' logic is opposite (default: -1, no price-based pausing). The purpose of this parameter is to prevent orders from being placed at "high points for long positions or low points for short positions that you consider".
+- `--boost`: Enable Boost mode for volume boosting on Aster and Backpack exchanges (only available for 'aster' and 'backpack')
+  Boost trading logic: Place maker orders to open positions, immediately close with taker orders after fill, repeat this cycle. Wear consists of one maker order, one taker order fees, and slippage.
 
-## 日志记录
+## Logging
 
-该机器人提供全面的日志记录：
+The bot provides comprehensive logging:
 
-- **交易日志**：包含订单详情的 CSV 文件
-- **调试日志**：带时间戳的详细活动日志
-- **控制台输出**：实时状态更新
-- **错误处理**：全面的错误日志记录和处理
+- **Transaction Logs**: CSV files with order details
+- **Debug Logs**: Detailed activity logs with timestamps
+- **Console Output**: Real-time status updates
+- **Error Handling**: Comprehensive error logging and handling
 
 ## Q & A
 
-### 如何在同一设备配置同一交易所的多个账号？
+### How to configure multiple accounts for the same exchange on the same device?
 
-1. 为每个账户创建一个 .env 文件，如 account_1.env, account_2.env
-2. 在每个账户的 .env 文件中设置 `ACCOUNT_NAME=`, 如`ACCOUNT_NAME=MAIN`。
-3. 在每个文件中配置好每个账户的 API key 或是密匙
-4. 通过更改命令行中的 `--env-file` 参数来开始不同的账户，如 `python runbot.py --env-file account_1.env [其他参数...]`
+1. Create a .env file for each account, such as account_1.env, account_2.env
+2. Set `ACCOUNT_NAME=` in each account's .env file, such as `ACCOUNT_NAME=MAIN`.
+3. Configure the API keys or secrets for each account in each file
+4. Use different `--env-file` parameters in the command line to start different accounts, such as `python runbot.py --env-file account_1.env [other parameters...]`
 
-### 如何在同一设备配置不同交易所的多个账号？
+### How to configure multiple accounts for different exchanges on the same device?
 
-将不同交易所的账号都配置在同一 `.env` 文件后，通过更改命令行中的 `--exchange` 参数来开始不同的交易所，如 `python runbot.py --exchange backpack [其他参数...]`
+Configure all different exchange accounts in the same `.env` file, then use different `--exchange` parameters in the command line to start different exchanges, such as `python runbot.py --exchange backpack [other parameters...]`
 
-### 如何在同一设备用同一账号配置同一交易所的多个合约？
+### How to configure multiple contracts for the same account and exchange on the same device?
 
-将账号配置在 `.env` 文件后，通过更改命令行中的 `--ticker` 参数来开始不同的合约，如 `python runbot.py --ticker ETH [其他参数...]`
+Configure the account in the `.env` file, then use different `--ticker` parameters in the command line to start different contracts, such as `python runbot.py --ticker ETH [other parameters...]`
 
-## 贡献
+## Contributing
 
-1. Fork 仓库
-2. 创建功能分支
-3. 进行更改
-4. 如适用，添加测试
-5. 提交拉取请求
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## 许可证
+## License
 
-本项目采用非商业许可证 - 详情请参阅[LICENSE](LICENSE)文件。
+This project is licensed under a Non-Commercial License - see the [LICENSE](LICENSE) file for details.
 
-**重要提醒**：本软件仅供个人学习和研究使用，严禁用于任何商业用途。如需商业使用，请联系作者获取商业许可证。
+**Important Notice**: This software is for personal learning and research purposes only. Commercial use is strictly prohibited. For commercial use, please contact the author for a commercial license.
 
-## 免责声明
+## Disclaimer
 
-本软件仅供教育和研究目的。加密货币交易涉及重大风险，可能导致重大财务损失。使用风险自负，切勿用您无法承受损失的资金进行交易。
+This software is for educational and research purposes only. Trading cryptocurrencies involves significant risk and can result in substantial financial losses. Use at your own risk and never trade with money you cannot afford to lose.
