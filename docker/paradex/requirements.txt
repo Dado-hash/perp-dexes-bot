@@ -1,0 +1,14 @@
+python-dotenv>=1.0.0
+pytz>=2025.2
+aiohttp>=3.8.0
+pydantic>=1.8.0
+pycryptodome>=3.15.0
+requests==2.32.5
+tenacity>=9.1.2
+
+# Paradex Python SDK (requires websockets >= 15.0)
+git+https://github.com/tradeparadex/paradex-py.git@7eb7aa3825d466b2f14abd3e94f2ce6b002d6a63
+
+# FastAPI for REST API
+fastapi==0.115.0
+uvicorn[standard]==0.32.1

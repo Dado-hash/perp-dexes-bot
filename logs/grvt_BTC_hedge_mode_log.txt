@@ -1,0 +1,19 @@
+2025-10-16 23:34:07,446 - hedge_bot_BTC - INFO - 🚀 Starting hedge bot for BTC
+2025-10-16 23:34:09,583 - hedge_bot_BTC - INFO - ✅ GRVT client initialized successfully
+2025-10-16 23:34:11,778 - hedge_bot_BTC - ERROR - ❌ Failed to initialize: cannot import name 'ClientConnection' from 'websockets' (/Users/davide/Documents/GitHub/perp-dex-tools/venv/lib/python3.12/site-packages/websockets/__init__.py)
+2025-10-16 23:34:11,778 - hedge_bot_BTC - INFO - 🔄 Cleaning up...
+2025-10-16 23:34:11,778 - hedge_bot_BTC - INFO - 
+🛑 Stopping...
+2025-10-16 23:34:11,779 - hedge_bot_BTC - INFO - 🔌 GRVT WebSocket will be disconnected
+2025-10-16 23:37:42,333 - hedge_bot_BTC - INFO - 🚀 Starting hedge bot for BTC
+2025-10-16 23:37:43,930 - hedge_bot_BTC - INFO - ✅ GRVT client initialized successfully
+2025-10-16 23:37:47,812 - hedge_bot_BTC - INFO - ✅ Paradex client initialized successfully
+2025-10-16 23:37:48,954 - hedge_bot_BTC - INFO - Contract info loaded - GRVT: BTC_USDT_Perp, Paradex: BTC-USD-PERP
+2025-10-16 23:37:48,955 - hedge_bot_BTC - INFO - ✅ GRVT WebSocket order update handler set up
+2025-10-16 23:37:53,112 - hedge_bot_BTC - INFO - ✅ GRVT WebSocket connection established
+2025-10-16 23:37:53,112 - hedge_bot_BTC - INFO - ✅ GRVT WebSocket connection established
+2025-10-16 23:37:55,114 - hedge_bot_BTC - INFO - ✅ Paradex WebSocket order update handler set up
+2025-10-16 23:37:56,348 - hedge_bot_BTC - INFO - 
+🛑 Stopping...
+2025-10-16 23:37:56,349 - hedge_bot_BTC - INFO - 🔌 GRVT WebSocket will be disconnected
+2025-10-16 23:37:56,349 - hedge_bot_BTC - INFO - 🔌 Paradex WebSocket will be disconnected

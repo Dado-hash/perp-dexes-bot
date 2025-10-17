@@ -1,0 +1,14 @@
+python-dotenv>=1.0.0
+pytz>=2025.2
+aiohttp>=3.8.0
+pydantic>=1.8.0
+pycryptodome>=3.15.0
+requests==2.32.5
+tenacity>=9.1.2
+
+# GRVT Python SDK (requires websockets 13.1)
+grvt-pysdk==0.2.1
+
+# FastAPI for REST API
+fastapi==0.115.0
+uvicorn[standard]==0.32.1

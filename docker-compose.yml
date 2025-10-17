@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  grvt:
+    build:
+      context: .
+      dockerfile: docker/grvt/Dockerfile
+    container_name: grvt-service
+    ports:
+      - "8001:8001"
+    environment:
+      - GRVT_TRADING_ACCOUNT_ID=${GRVT_TRADING_ACCOUNT_ID}
+      - GRVT_PRIVATE_KEY=${GRVT_PRIVATE_KEY}
+      - GRVT_API_KEY=${GRVT_API_KEY}
+      - GRVT_ENVIRONMENT=${GRVT_ENVIRONMENT:-prod}
+    networks:
+      - hedge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  paradex:
+    build:
+      context: .
+      dockerfile: docker/paradex/Dockerfile
+    container_name: paradex-service
+    ports:
+      - "8002:8002"
+    environment:
+      - PARADEX_L1_ADDRESS=${PARADEX_L1_ADDRESS}
+      - PARADEX_L2_PRIVATE_KEY=${PARADEX_L2_PRIVATE_KEY}
+      - PARADEX_L2_ADDRESS=${PARADEX_L2_ADDRESS}
+      - PARADEX_ENVIRONMENT=${PARADEX_ENVIRONMENT:-prod}
+    networks:
+      - hedge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  hedge-network:
+    driver: bridge

@@ -1,0 +1,8 @@
+# Minimal requirements for running hedge_mode_grvt_paradex.py (Docker-based)
+# The heavy dependencies (grvt-pysdk, paradex-py) run inside Docker containers
+
+python-dotenv>=1.0.0  # For loading .env file
+pytz>=2025.2          # For timezone handling in CSV logs
+httpx>=0.27.0         # For HTTP calls to Docker services
+
+# That's it! Everything else runs in Docker containers
