@@ -9,6 +9,7 @@
 logs/
 *.log
 *.txt
+!env_example.txt
 *.csv
 
 # Python
