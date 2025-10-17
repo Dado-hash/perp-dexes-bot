@@ -26,6 +26,10 @@ from typing import Tuple, Optional, Dict, Any
 from datetime import datetime
 import pytz
 
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from helpers.telegram_bot import TelegramBot
+
 
 class HedgeBot:
     """Trading bot that places post-only limit orders on GRVT and hedges with market orders on Paradex using Docker services."""
@@ -103,10 +107,28 @@ class HedgeBot:
         # HTTP client
         self.http_client = httpx.AsyncClient(timeout=30.0)
 
+        # Telegram bot (optional)
+        self.telegram_bot = None
+        telegram_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID')
+        if telegram_token and telegram_chat_id:
+            try:
+                self.telegram_bot = TelegramBot(telegram_token, telegram_chat_id)
+                self.logger.info("✅ Telegram notifications enabled")
+            except Exception as e:
+                self.logger.warning(f"⚠️ Failed to initialize Telegram bot: {e}")
+
     def shutdown(self, signum=None, frame=None):
         """Graceful shutdown handler."""
         self.stop_flag = True
         self.logger.info("\n🛑 Stopping...")
+
+        # Close Telegram bot
+        if self.telegram_bot:
+            try:
+                self.telegram_bot.close()
+            except Exception:
+                pass
 
         # Close logging handlers
         for handler in self.logger.handlers[:]:
@@ -137,6 +159,14 @@ class HedgeBot:
         """Setup signal handlers for graceful shutdown."""
         signal.signal(signal.SIGINT, self.shutdown)
         signal.signal(signal.SIGTERM, self.shutdown)
+
+    def send_telegram_notification(self, message: str):
+        """Send notification via Telegram if configured."""
+        if self.telegram_bot:
+            try:
+                self.telegram_bot.send_text(message)
+            except Exception as e:
+                self.logger.debug(f"Failed to send Telegram notification: {e}")
 
     async def check_grvt_health(self) -> bool:
         """Check if GRVT service is healthy."""
@@ -354,10 +384,12 @@ class HedgeBot:
             self.logger.error(f"❌ Failed to get Paradex position: {e}")
             return Decimal('0')
 
-    async def wait_for_grvt_fill(self, order_id: str, timeout: int = 30) -> bool:
+    async def wait_for_grvt_fill(self, order_id: str, timeout: int = 30) -> Tuple[bool, Decimal]:
         """
         Wait for GRVT order to be filled.
-        Returns True if filled, False if timeout or cancelled.
+        Returns (success, filled_size) tuple:
+        - success: True if filled, False if timeout or cancelled
+        - filled_size: Actual quantity filled
         """
         start_time = time.time()
         self.logger.info(f"⏳ Waiting for GRVT order {order_id} to fill (timeout: {timeout}s)...")
@@ -382,11 +414,11 @@ class HedgeBot:
                             self.grvt_position += filled_size
                         else:
                             self.grvt_position -= filled_size
-                        return True
+                        return (True, filled_size)
 
                     elif status in ["CANCELED", "CANCELLED", "REJECTED"]:
                         self.logger.warning(f"⚠️ GRVT order {order_id} was {status}")
-                        return False
+                        return (False, Decimal('0'))
 
                     elif status == "PARTIALLY_FILLED":
                         self.logger.info(f"🔄 GRVT order {order_id} partially filled: {filled_size}/{total_size}")
@@ -413,9 +445,9 @@ class HedgeBot:
         except Exception as e:
             self.logger.error(f"❌ Failed to cancel order: {e}")
 
-        return False
+        return (False, Decimal('0'))
 
-    async def place_order_with_auto_reprice(self, side: str, quantity: Decimal) -> str:
+    async def place_order_with_auto_reprice(self, side: str, quantity: Decimal) -> Tuple[str, Decimal]:
         """
         Place GRVT order with automatic repricing until filled.
 
@@ -430,7 +462,7 @@ class HedgeBot:
             quantity: Order quantity
 
         Returns:
-            order_id: The ID of the filled order
+            (order_id, filled_size): Tuple of order ID and actual filled quantity
         """
         attempt = 0
 
@@ -452,11 +484,11 @@ class HedgeBot:
                 continue
 
             # Wait for fill
-            filled = await self.wait_for_grvt_fill(order_id, timeout=self.fill_timeout)
+            filled, filled_size = await self.wait_for_grvt_fill(order_id, timeout=self.fill_timeout)
 
             if filled:
-                self.logger.info(f"✅ Order filled after {attempt} attempt(s)")
-                return order_id
+                self.logger.info(f"✅ Order filled after {attempt} attempt(s) - Filled size: {filled_size}")
+                return (order_id, filled_size)
 
             # Not filled - wait_for_grvt_fill already cancelled the order
             self.logger.warning(f"⏱️ Order {order_id} not filled after {self.fill_timeout}s (attempt #{attempt})")
@@ -468,6 +500,15 @@ class HedgeBot:
     async def trading_loop(self):
         """Main trading loop implementing the hedge strategy."""
         self.logger.info(f"🚀 Starting GRVT-Paradex hedge bot for {self.ticker}")
+
+        # Send start notification
+        self.send_telegram_notification(
+            f"🚀 <b>GRVT-Paradex Hedge Bot Started</b>\n\n"
+            f"📊 Ticker: <b>{self.ticker}</b>\n"
+            f"💰 Order Size: <b>{self.order_quantity}</b>\n"
+            f"🔄 Iterations: <b>{self.iterations}</b>\n"
+            f"⏱️ Fill Timeout: <b>{self.fill_timeout}s</b>"
+        )
 
         # Check service health
         self.logger.info("🔍 Checking Docker services...")
@@ -514,6 +555,12 @@ class HedgeBot:
             self.logger.info(f"🔄 Trading loop iteration {iterations}/{self.iterations}")
             self.logger.info("-----------------------------------------------")
 
+            # Send iteration start notification
+            self.send_telegram_notification(
+                f"🔄 <b>Iteration {iterations}/{self.iterations}</b>\n"
+                f"━━━━━━━━━━━━━━━━━━━━"
+            )
+
             # Update positions
             self.grvt_position = await self.get_grvt_position()
             self.paradex_position = await self.get_paradex_position()
@@ -521,53 +568,116 @@ class HedgeBot:
 
             # Check position mismatch
             if abs(self.grvt_position + self.paradex_position) > 0.2:
-                self.logger.error(f"❌ Position diff too large: {self.grvt_position + self.paradex_position}")
+                error_msg = f"❌ Position diff too large: {self.grvt_position + self.paradex_position}"
+                self.logger.error(error_msg)
+                self.send_telegram_notification(
+                    f"⚠️ <b>CRITICAL ERROR</b>\n\n"
+                    f"{error_msg}\n"
+                    f"GRVT: {self.grvt_position}\n"
+                    f"Paradex: {self.paradex_position}"
+                )
                 break
 
             try:
                 # STEP 1: Open position on GRVT (maker order with auto-repricing)
                 self.logger.info("[STEP 1] Opening position on GRVT...")
-                grvt_order_id = await self.place_order_with_auto_reprice('buy', self.order_quantity)
+                grvt_order_id, grvt_filled_size = await self.place_order_with_auto_reprice('buy', self.order_quantity)
                 # Note: place_order_with_auto_reprice automatically retries until filled
 
+                self.logger.info(f"💎 GRVT filled size: {grvt_filled_size} (requested: {self.order_quantity})")
+                self.send_telegram_notification(
+                    f"✅ <b>GRVT BUY Order FILLED</b>\n"
+                    f"Size: <b>{grvt_filled_size} {self.ticker}</b>"
+                )
+
                 # STEP 2: Immediately hedge on Paradex with MARKET order
-                self.logger.info("[STEP 2] 🚀 GRVT filled! Immediately hedging on Paradex with MARKET order...")
-                paradex_order_id = await self.place_paradex_market_order('sell', self.order_quantity)
+                # IMPORTANT: Use actual filled size, not the original order quantity
+                self.logger.info(f"[STEP 2] 🚀 GRVT filled! Immediately hedging on Paradex with MARKET order for {grvt_filled_size}...")
+                paradex_order_id = await self.place_paradex_market_order('sell', grvt_filled_size)
 
                 if not paradex_order_id:
-                    self.logger.error("❌ Failed to place Paradex hedge order")
+                    error_msg = "❌ Failed to place Paradex hedge order"
+                    self.logger.error(error_msg)
                     self.logger.warning("⚠️ DANGER: GRVT position is open but Paradex hedge failed!")
+                    self.send_telegram_notification(
+                        f"🚨 <b>CRITICAL ERROR</b>\n\n"
+                        f"{error_msg}\n\n"
+                        f"⚠️ <b>DANGER:</b> GRVT position is open but Paradex hedge failed!\n"
+                        f"Manual intervention required!"
+                    )
                     break
+
+                self.send_telegram_notification(
+                    f"✅ <b>Paradex SELL Hedge FILLED</b>\n"
+                    f"Size: <b>{grvt_filled_size} {self.ticker}</b>"
+                )
 
                 # Market orders fill immediately, just wait a moment
                 await asyncio.sleep(1)
 
                 # STEP 3: Close position on GRVT (maker order with auto-repricing)
                 self.logger.info("[STEP 3] Closing position on GRVT...")
-                grvt_close_id = await self.place_order_with_auto_reprice('sell', self.order_quantity)
+                grvt_close_id, grvt_close_filled_size = await self.place_order_with_auto_reprice('sell', self.order_quantity)
                 # Note: place_order_with_auto_reprice automatically retries until filled
 
+                self.logger.info(f"💎 GRVT close filled size: {grvt_close_filled_size} (requested: {self.order_quantity})")
+                self.send_telegram_notification(
+                    f"✅ <b>GRVT SELL Order FILLED</b>\n"
+                    f"Size: <b>{grvt_close_filled_size} {self.ticker}</b>"
+                )
+
                 # STEP 4: Close Paradex hedge with MARKET order
-                self.logger.info("[STEP 4] 🚀 Closing Paradex hedge with MARKET order...")
-                paradex_close_id = await self.place_paradex_market_order('buy', self.order_quantity)
+                # IMPORTANT: Use actual filled size, not the original order quantity
+                self.logger.info(f"[STEP 4] 🚀 Closing Paradex hedge with MARKET order for {grvt_close_filled_size}...")
+                paradex_close_id = await self.place_paradex_market_order('buy', grvt_close_filled_size)
 
                 if not paradex_close_id:
-                    self.logger.error("❌ Failed to close Paradex hedge")
+                    error_msg = "❌ Failed to close Paradex hedge"
+                    self.logger.error(error_msg)
+                    self.send_telegram_notification(
+                        f"🚨 <b>ERROR</b>\n\n"
+                        f"{error_msg}\n\n"
+                        f"Iteration failed!"
+                    )
                     break
+
+                self.send_telegram_notification(
+                    f"✅ <b>Paradex BUY Hedge FILLED</b>\n"
+                    f"Size: <b>{grvt_close_filled_size} {self.ticker}</b>"
+                )
 
                 # Market order fills immediately
                 await asyncio.sleep(1)
+
+                # Send iteration complete notification
+                self.send_telegram_notification(
+                    f"✅ <b>Iteration {iterations}/{self.iterations} Complete!</b>"
+                )
 
                 # Wait before next iteration
                 self.logger.info("✅ Iteration complete, waiting 3s before next iteration...")
                 await asyncio.sleep(3)
 
             except Exception as e:
-                self.logger.error(f"⚠️ Error in trading loop: {e}")
+                error_msg = f"⚠️ Error in trading loop: {e}"
+                self.logger.error(error_msg)
                 self.logger.error(f"⚠️ Full traceback: {traceback.format_exc()}")
+                self.send_telegram_notification(
+                    f"🚨 <b>EXCEPTION in Trading Loop</b>\n\n"
+                    f"<code>{str(e)[:200]}</code>\n\n"
+                    f"Bot stopped!"
+                )
                 break
 
         self.logger.info("✅ Trading loop completed")
+
+        # Send completion notification
+        self.send_telegram_notification(
+            f"🏁 <b>Trading Loop Completed</b>\n\n"
+            f"Total iterations: <b>{iterations}/{self.iterations}</b>\n"
+            f"Ticker: <b>{self.ticker}</b>\n\n"
+            f"Bot stopped gracefully."
+        )
 
     async def run(self):
         """Run the hedge bot."""
