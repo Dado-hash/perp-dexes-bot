@@ -616,11 +616,12 @@ class HedgeBot:
                 await asyncio.sleep(1)
 
                 # STEP 3: Close position on GRVT (maker order with auto-repricing)
-                self.logger.info("[STEP 3] Closing position on GRVT...")
-                grvt_close_id, grvt_close_filled_size = await self.place_order_with_auto_reprice('sell', self.order_quantity)
+                # IMPORTANT: Close exactly the amount that was opened (grvt_filled_size), not the default order_quantity
+                self.logger.info(f"[STEP 3] Closing position on GRVT (closing {grvt_filled_size} SOL)...")
+                grvt_close_id, grvt_close_filled_size = await self.place_order_with_auto_reprice('sell', grvt_filled_size)
                 # Note: place_order_with_auto_reprice automatically retries until filled
 
-                self.logger.info(f"💎 GRVT close filled size: {grvt_close_filled_size} (requested: {self.order_quantity})")
+                self.logger.info(f"💎 GRVT close filled size: {grvt_close_filled_size} (requested: {grvt_filled_size})")
                 self.send_telegram_notification(
                     f"✅ <b>GRVT SELL Order FILLED</b>\n"
                     f"Size: <b>{grvt_close_filled_size} {self.ticker}</b>"
