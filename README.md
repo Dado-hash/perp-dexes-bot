@@ -277,6 +277,141 @@ python hedge_mode.py --exchange backpack --ticker ETH --size 0.1 --iter 20
 - `--iter`: Number of trading cycles
 - `--fill-timeout`: Maker order fill timeout in seconds (default: 5)
 
+## 🚀 GRVT-Paradex Hedge Mode (Docker-based)
+
+A specialized hedge trading bot that operates between GRVT and Paradex exchanges using Docker containers to avoid SDK dependency conflicts.
+
+### How It Works
+
+1. **STEP 1**: Places a post-only limit order on GRVT (maker order)
+   - Automatically reprices and replaces the order if not filled within timeout
+   - Continues until the order is filled
+2. **STEP 2**: Immediately hedges on Paradex with a market order after GRVT fill
+3. **STEP 3**: Closes the GRVT position with another post-only limit order
+   - Same auto-repricing logic as STEP 1
+4. **STEP 4**: Closes the Paradex hedge with a market order
+
+### Key Features
+
+- **Auto-Repricing**: Orders that don't fill within the timeout are automatically cancelled and replaced at the current market price
+- **Persistent Retry**: No limit on repricing attempts - the bot continues until orders are filled
+- **Docker Isolation**: Runs GRVT and Paradex services in separate containers to prevent dependency conflicts
+- **Configurable Timeout**: Control how long to wait before repricing orders
+
+### Prerequisites
+
+1. **Docker and Docker Compose installed**
+2. **Environment variables configured** in `.env` file:
+   ```bash
+   # GRVT Configuration
+   GRVT_TRADING_ACCOUNT_ID=your_trading_account_id
+   GRVT_PRIVATE_KEY=your_private_key
+   GRVT_API_KEY=your_api_key
+   GRVT_ENVIRONMENT=prod  # or testnet, staging, dev
+
+   # Paradex Configuration
+   PARADEX_L1_ADDRESS=your_l1_wallet_address
+   PARADEX_L2_ADDRESS=your_l2_wallet_address
+   PARADEX_L2_PRIVATE_KEY=your_l2_private_key
+
+   # Docker Service URLs (optional, defaults shown)
+   GRVT_SERVICE_URL=http://localhost:8001
+   PARADEX_SERVICE_URL=http://localhost:8002
+   ```
+
+### Setup Instructions
+
+1. **Start Docker services**:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Verify services are running**:
+   ```bash
+   docker-compose ps
+   ```
+   You should see both `grvt-service` and `paradex-service` running.
+
+3. **Check service logs** (optional):
+   ```bash
+   docker-compose logs -f grvt-service
+   docker-compose logs -f paradex-service
+   ```
+
+### Usage Examples
+
+**Basic usage with default timeout (5 seconds)**:
+```bash
+python hedge/hedge_mode_grvt_paradex.py --ticker BTC --size 0.05 --iter 20
+```
+
+**With longer timeout for slower fills (60 seconds)**:
+```bash
+python hedge/hedge_mode_grvt_paradex.py --ticker SOL --size 0.1 --iter 20 --fill-timeout 60
+```
+
+**With shorter timeout for aggressive repricing (3 seconds)**:
+```bash
+python hedge/hedge_mode_grvt_paradex.py --ticker ETH --size 0.2 --iter 50 --fill-timeout 3
+```
+
+### Parameters
+
+- `--ticker`: Trading pair symbol (e.g., BTC, ETH, SOL) - default: BTC
+- `--size`: Order quantity per trade (required)
+- `--iter`: Number of trading iterations/cycles (required)
+- `--fill-timeout`: Seconds to wait for order fill before repricing (default: 5)
+
+### Stopping the Bot
+
+Press `Ctrl+C` to gracefully stop the bot. The bot will:
+- Cancel any pending orders
+- Close logging handlers
+- Exit cleanly
+
+### Stopping Docker Services
+
+When you're done trading:
+```bash
+docker-compose down
+```
+
+### Troubleshooting
+
+**Container name conflicts**:
+```bash
+# Remove existing containers
+docker rm -f grvt-service paradex-service
+
+# Restart services
+docker-compose up -d
+```
+
+**Service health check fails**:
+```bash
+# Check if containers are running
+docker ps
+
+# View service logs for errors
+docker-compose logs grvt-service
+docker-compose logs paradex-service
+
+# Restart services
+docker-compose restart
+```
+
+**Missing environment variables**:
+- Ensure all required variables are set in your `.env` file
+- Verify PARADEX_L2_ADDRESS is configured (warning shown if missing)
+
+### Logs and Monitoring
+
+- **Log files**: Stored in `logs/grvt_{TICKER}_hedge_mode_docker_log.txt`
+- **Trade CSV**: Stored in `logs/grvt_{TICKER}_hedge_mode_docker_trades.csv`
+- **Console output**: Real-time status updates with emoji indicators
+
+For more details, see [GRVT_PARADEX_SETUP.md](GRVT_PARADEX_SETUP.md).
+
 ## Configuration
 
 ### Environment Variables
