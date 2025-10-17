@@ -1,3 +1,0 @@
-2025-10-17 05:37:48.954 - INFO - [GRVT_BTC] WebSocket not ready yet; will subscribe after connect()
-2025-10-17 05:37:53.112 - INFO - [GRVT_BTC] Deferred subscription started for BTC_USDT_Perp
-2025-10-17 05:37:53.113 - INFO - [GRVT_BTC] Successfully subscribed to order updates for BTC_USDT_Perp

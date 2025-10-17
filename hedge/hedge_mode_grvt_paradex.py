@@ -484,7 +484,7 @@ class HedgeBot:
                     break
 
                 # Wait for GRVT order to FILL (polling with timeout)
-                grvt_filled = await self.wait_for_grvt_fill(grvt_order_id, timeout=30)
+                grvt_filled = await self.wait_for_grvt_fill(grvt_order_id, timeout=self.fill_timeout)
 
                 if not grvt_filled:
                     self.logger.error("❌ GRVT order was not filled, skipping iteration")
@@ -511,7 +511,7 @@ class HedgeBot:
                     break
 
                 # Wait for GRVT close order to fill
-                grvt_close_filled = await self.wait_for_grvt_fill(grvt_close_id, timeout=30)
+                grvt_close_filled = await self.wait_for_grvt_fill(grvt_close_id, timeout=self.fill_timeout)
 
                 if not grvt_close_filled:
                     self.logger.error("❌ GRVT close order was not filled")

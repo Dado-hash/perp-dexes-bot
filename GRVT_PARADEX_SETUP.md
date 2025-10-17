@@ -107,7 +107,9 @@ Install httpx in your local environment:
 source venv/bin/activate  # or your venv name
 
 # Install httpx
-pip install httpx>=0.27.0
+pip install httpx
+pip install pytz
+pip install dotenv
 
 # Or install all requirements
 pip install -r requirements.txt
@@ -117,7 +119,7 @@ pip install -r requirements.txt
 
 ```bash
 # Run hedge mode with GRVT-Paradex
-python hedge_mode.py --exchange grvt --ticker BTC --size 0.001 --iter 10
+python hedge_mode.py --exchange grvt --ticker SOL --size 1 --iter 1 --fill-timeout 60
 ```
 
 ## Usage Examples
@@ -130,7 +132,7 @@ GRVT_ENVIRONMENT=testnet
 PARADEX_ENVIRONMENT=testnet
 
 # Run with small size for testing
-python hedge_mode.py --exchange grvt --ticker BTC --size 0.001 --iter 1
+python hedge_mode.py --exchange grvt --ticker BTC --size 0.001 --iter 1 --fill-timeout 60
 ```
 
 ### Production Mode
@@ -141,7 +143,7 @@ GRVT_ENVIRONMENT=prod
 PARADEX_ENVIRONMENT=prod
 
 # Run with real size
-python hedge_mode.py --exchange grvt --ticker BTC --size 0.01 --iter 10
+python hedge_mode.py --exchange grvt --ticker BTC --size 0.01 --iter 10 --fill-timeout 60
 ```
 
 ## Monitoring and Logs
