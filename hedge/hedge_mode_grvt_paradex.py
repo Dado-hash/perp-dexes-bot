@@ -424,7 +424,7 @@ class HedgeBot:
                         self.logger.info(f"🔄 GRVT order {order_id} partially filled: {filled_size}/{total_size}")
                         # Continue waiting
 
-                await asyncio.sleep(0.5)  # Poll every 500ms
+                await asyncio.sleep(0.1)  # Poll every 100ms for faster detection
 
             except Exception as e:
                 self.logger.error(f"❌ Error checking GRVT order status: {e}")
@@ -495,7 +495,7 @@ class HedgeBot:
             self.logger.info(f"🔄 Will reprice and replace order at current market price...")
 
             # Small delay before repricing
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.2)
 
     async def trading_loop(self):
         """Main trading loop implementing the hedge strategy."""
