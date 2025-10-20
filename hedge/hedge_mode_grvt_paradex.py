@@ -581,19 +581,19 @@ class HedgeBot:
             try:
                 # STEP 1: Open position on GRVT (maker order with auto-repricing)
                 self.logger.info("[STEP 1] Opening position on GRVT...")
-                grvt_order_id, grvt_filled_size = await self.place_order_with_auto_reprice('buy', self.order_quantity)
+                grvt_order_id, grvt_filled_size = await self.place_order_with_auto_reprice('sell', self.order_quantity)
                 # Note: place_order_with_auto_reprice automatically retries until filled
 
                 self.logger.info(f"💎 GRVT filled size: {grvt_filled_size} (requested: {self.order_quantity})")
                 self.send_telegram_notification(
-                    f"✅ <b>GRVT BUY Order FILLED</b>\n"
+                    f"✅ <b>GRVT SELL Order FILLED</b>\n"
                     f"Size: <b>{grvt_filled_size} {self.ticker}</b>"
                 )
 
                 # STEP 2: Immediately hedge on Paradex with MARKET order
                 # IMPORTANT: Use actual filled size, not the original order quantity
                 self.logger.info(f"[STEP 2] 🚀 GRVT filled! Immediately hedging on Paradex with MARKET order for {grvt_filled_size}...")
-                paradex_order_id = await self.place_paradex_market_order('sell', grvt_filled_size)
+                paradex_order_id = await self.place_paradex_market_order('buy', grvt_filled_size)
 
                 if not paradex_order_id:
                     error_msg = "❌ Failed to place Paradex hedge order"
@@ -608,7 +608,7 @@ class HedgeBot:
                     break
 
                 self.send_telegram_notification(
-                    f"✅ <b>Paradex SELL Hedge FILLED</b>\n"
+                    f"✅ <b>Paradex BUY Hedge FILLED</b>\n"
                     f"Size: <b>{grvt_filled_size} {self.ticker}</b>"
                 )
 
@@ -617,20 +617,20 @@ class HedgeBot:
 
                 # STEP 3: Close position on GRVT (maker order with auto-repricing)
                 # IMPORTANT: Close exactly the amount that was opened (grvt_filled_size), not the default order_quantity
-                self.logger.info(f"[STEP 3] Closing position on GRVT (closing {grvt_filled_size} SOL)...")
-                grvt_close_id, grvt_close_filled_size = await self.place_order_with_auto_reprice('sell', grvt_filled_size)
+                self.logger.info(f"[STEP 3] Closing position on GRVT (closing {grvt_filled_size} {self.ticker})...")
+                grvt_close_id, grvt_close_filled_size = await self.place_order_with_auto_reprice('buy', grvt_filled_size)
                 # Note: place_order_with_auto_reprice automatically retries until filled
 
                 self.logger.info(f"💎 GRVT close filled size: {grvt_close_filled_size} (requested: {grvt_filled_size})")
                 self.send_telegram_notification(
-                    f"✅ <b>GRVT SELL Order FILLED</b>\n"
+                    f"✅ <b>GRVT BUY Order FILLED</b>\n"
                     f"Size: <b>{grvt_close_filled_size} {self.ticker}</b>"
                 )
 
                 # STEP 4: Close Paradex hedge with MARKET order
                 # IMPORTANT: Use actual filled size, not the original order quantity
                 self.logger.info(f"[STEP 4] 🚀 Closing Paradex hedge with MARKET order for {grvt_close_filled_size}...")
-                paradex_close_id = await self.place_paradex_market_order('buy', grvt_close_filled_size)
+                paradex_close_id = await self.place_paradex_market_order('sell', grvt_close_filled_size)
 
                 if not paradex_close_id:
                     error_msg = "❌ Failed to close Paradex hedge"
@@ -643,7 +643,7 @@ class HedgeBot:
                     break
 
                 self.send_telegram_notification(
-                    f"✅ <b>Paradex BUY Hedge FILLED</b>\n"
+                    f"✅ <b>Paradex SELL Hedge FILLED</b>\n"
                     f"Size: <b>{grvt_close_filled_size} {self.ticker}</b>"
                 )
 
