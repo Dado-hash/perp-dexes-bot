@@ -120,6 +120,20 @@ class GrvtClient(BaseExchangeClient):
         try:
             if self._ws_client:
                 await self._ws_client.__aexit__()
+
+                session = getattr(self._ws_client, "_session", None)
+                if session is not None:
+                    try:
+                        await session.close()
+                    except Exception as close_exc:
+                        self.logger.log(f"Error closing GRVT session: {close_exc}", "WARNING")
+                    finally:
+                        try:
+                            self._ws_client._session = None  # type: ignore[attr-defined]
+                        except Exception:
+                            pass
+
+                self._ws_client = None
         except Exception as e:
             self.logger.log(f"Error during GRVT disconnect: {e}", "ERROR")
 

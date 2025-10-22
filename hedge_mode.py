@@ -11,6 +11,8 @@ Usage:
 Supported exchanges:
     - backpack: Uses HedgeBot from hedge_mode_bp.py (Backpack + Lighter)
     - extended: Uses HedgeBot from hedge_mode_ext.py (Extended + Lighter)
+    - grvt_paradex: Uses HedgeBot from hedge_mode_grvt_paradex.py (GRVT + Paradex via Docker)
+    - grvt_lighter: Uses HedgeBot from hedge_mode_grvt_lighter.py (GRVT + Lighter direct)
 
 Cross-platform compatibility:
     - Works on Linux, macOS, and Windows
@@ -33,11 +35,13 @@ def parse_arguments():
 Examples:
     python hedge_mode.py --exchange backpack --ticker BTC --size 0.01 --iter 10
     python hedge_mode.py --exchange extended --ticker ETH --size 0.1 --iter 5
+    python hedge_mode.py --exchange grvt_paradex --ticker BTC --size 0.01 --iter 3
+    python hedge_mode.py --exchange grvt_lighter --ticker BTC --size 0.01 --iter 3
         """
     )
     
     parser.add_argument('--exchange', type=str, required=True,
-                        help='Exchange to use (backpack or extended)')
+                        help='Exchange to use (backpack, extended, grvt_paradex, grvt_lighter)')
     parser.add_argument('--ticker', type=str, default='BTC',
                         help='Ticker symbol (default: BTC)')
     parser.add_argument('--size', type=str, required=True,
@@ -54,7 +58,7 @@ Examples:
 
 def validate_exchange(exchange):
     """Validate that the exchange is supported."""
-    supported_exchanges = ['backpack', 'extended', 'grvt']
+    supported_exchanges = ['backpack', 'extended', 'grvt', 'grvt_paradex', 'grvt_lighter']
     if exchange.lower() not in supported_exchanges:
         print(f"Error: Unsupported exchange '{exchange}'")
         print(f"Supported exchanges: {', '.join(supported_exchanges)}")
@@ -64,14 +68,19 @@ def validate_exchange(exchange):
 def get_hedge_bot_class(exchange):
     """Import and return the appropriate HedgeBot class."""
     try:
-        if exchange.lower() == 'backpack':
+        lowered = exchange.lower()
+
+        if lowered == 'backpack':
             from hedge.hedge_mode_bp import HedgeBot
             return HedgeBot
-        elif exchange.lower() == 'extended':
+        elif lowered == 'extended':
             from hedge.hedge_mode_ext import HedgeBot
             return HedgeBot
-        elif exchange.lower() == 'grvt':
+        elif lowered in {'grvt', 'grvt_paradex'}:
             from hedge.hedge_mode_grvt_paradex import HedgeBot
+            return HedgeBot
+        elif lowered == 'grvt_lighter':
+            from hedge.hedge_mode_grvt_lighter import HedgeBot
             return HedgeBot
         else:
             raise ValueError(f"Unsupported exchange: {exchange}")
@@ -106,27 +115,12 @@ async def main():
     
     try:
         # Create the hedge bot instance
-        if args.exchange.lower() == 'backpack':
-            bot = HedgeBotClass(
-                ticker=args.ticker.upper(),
-                order_quantity=Decimal(args.size),
-                fill_timeout=args.fill_timeout,
-                iterations=args.iter
-            )
-        elif args.exchange.lower() == 'extended':
-            bot = HedgeBotClass(
-                ticker=args.ticker.upper(),
-                order_quantity=Decimal(args.size),
-                fill_timeout=args.fill_timeout,
-                iterations=args.iter
-            )
-        else:  # grvt
-            bot = HedgeBotClass(
-                ticker=args.ticker.upper(),
-                order_quantity=Decimal(args.size),
-                fill_timeout=args.fill_timeout,
-                iterations=args.iter
-            )
+        bot = HedgeBotClass(
+            ticker=args.ticker.upper(),
+            order_quantity=Decimal(args.size),
+            fill_timeout=args.fill_timeout,
+            iterations=args.iter
+        )
         
         # Run the bot
         await bot.run()
