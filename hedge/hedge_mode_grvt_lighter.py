@@ -286,11 +286,48 @@ class HedgeBot:
         except Exception as exc:
             self.logger.warning(f"⚠️ Unable to refresh Lighter position: {exc}")
 
-    async def wait_for_grvt_fill(self, order_id: str, timeout: int) -> Tuple[bool, Decimal]:
-        """Poll GRVT for fill information until filled or timeout."""
+    async def wait_for_grvt_fill(
+        self,
+        order_id: str,
+        timeout: int,
+        side: str,
+        expected_size: Decimal,
+        pre_position: Decimal,
+        fallback_price: Optional[Decimal],
+    ) -> Tuple[bool, Decimal, Optional[Decimal], Optional[Decimal]]:
+        """Poll GRVT for fill information until filled or timeout.
+
+        Returns a tuple of (filled?, filled_size, fill_price, post_position).
+        """
         start = time.time()
         last_status = "UNKNOWN"
+        direction = side.lower()
+        expected_signed = expected_size if direction == "buy" else -expected_size
+        tolerance = max(Decimal("0.0001"), expected_size * Decimal("0.05"))
+        order_missing = False
+        missing_since: Optional[float] = None
+
         while time.time() - start < timeout and not self.stop_flag:
+            if order_missing:
+                try:
+                    post_position = await self._fetch_grvt_signed_position()
+                except Exception as exc:
+                    self.logger.warning(f"⚠️ Unable to fetch GRVT position after missing order info: {exc}")
+                    await asyncio.sleep(0.3)
+                    continue
+
+                delta = post_position - pre_position
+                if abs(delta - expected_signed) <= tolerance:
+                    filled_qty = abs(delta) or expected_size
+                    return True, filled_qty, fallback_price, post_position
+
+                if missing_since and time.time() - missing_since > 2:
+                    order_missing = False
+                    missing_since = None
+                else:
+                    await asyncio.sleep(0.3)
+                continue
+
             try:
                 order_info = await self.grvt_client.get_order_info(order_id=order_id)
             except Exception as exc:
@@ -299,8 +336,10 @@ class HedgeBot:
                 continue
 
             if not order_info:
-                self.logger.warning("⚠️ GRVT order info missing, retrying...")
-                await asyncio.sleep(0.5)
+                self.logger.info("ℹ️ GRVT order info unavailable, switching to delta tracking…")
+                order_missing = True
+                missing_since = time.time()
+                await asyncio.sleep(0.3)
                 continue
 
             status = order_info.status.upper()
@@ -310,10 +349,9 @@ class HedgeBot:
 
             if status == "FILLED":
                 filled_size = order_info.filled_size or order_info.size
-                self.log_trade_to_csv("GRVT", order_info.side, order_info.price, filled_size)
-                return True, filled_size
+                return True, filled_size, order_info.price, None
             if status in {"CANCELED", "CANCELLED", "REJECTED"}:
-                return False, Decimal("0")
+                return False, Decimal("0"), None, None
 
             await asyncio.sleep(0.3)
 
@@ -322,7 +360,7 @@ class HedgeBot:
             await self.grvt_client.cancel_order(order_id)
         except Exception as exc:
             self.logger.error(f"❌ Failed to cancel GRVT order {order_id}: {exc}")
-        return False, Decimal("0")
+        return False, Decimal("0"), None, None
 
     async def place_grvt_order_with_reprice(self, side: str, quantity: Decimal) -> Tuple[str, Decimal]:
         """Repeatedly place GRVT post-only orders until one fills."""
@@ -346,11 +384,34 @@ class HedgeBot:
                 continue
 
             order_id = order_result.order_id
+            try:
+                pre_position = await self._fetch_grvt_signed_position()
+                self.grvt_position = pre_position
+            except Exception as exc:
+                self.logger.warning(f"⚠️ Unable to capture pre-fill GRVT position: {exc}")
+                pre_position = self.grvt_position
             self.logger.info(f"[{order_id}] [GRVT] {side.upper()} attempt #{attempt}")
-            filled, filled_size = await self.wait_for_grvt_fill(order_id, self.fill_timeout)
+            filled, filled_size, fill_price, post_position = await self.wait_for_grvt_fill(
+                order_id,
+                self.fill_timeout,
+                side,
+                quantity,
+                pre_position,
+                getattr(order_result, "price", None),
+            )
             if filled and filled_size > 0:
-                delta = filled_size if side.lower() == "buy" else -filled_size
-                self.grvt_position += delta
+                if post_position is not None:
+                    self.grvt_position = post_position
+                else:
+                    try:
+                        self.grvt_position = await self._fetch_grvt_signed_position()
+                    except Exception as exc:
+                        self.logger.warning(f"⚠️ Unable to refresh GRVT position after fill: {exc}")
+                trade_price = fill_price or getattr(order_result, "price", None)
+                if trade_price is not None:
+                    self.log_trade_to_csv("GRVT", side, trade_price, filled_size)
+                else:
+                    self.logger.info("ℹ️ GRVT fill recorded without price detail")
                 return order_id, filled_size
 
             await asyncio.sleep(0.5)

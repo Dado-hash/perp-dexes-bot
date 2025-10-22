@@ -5,6 +5,7 @@ GRVT exchange client implementation.
 import os
 import asyncio
 import time
+import logging
 from decimal import Decimal
 from typing import Dict, Any, List, Optional, Tuple
 from pysdk.grvt_ccxt import GrvtCcxt
@@ -13,6 +14,9 @@ from pysdk.grvt_ccxt_env import GrvtEnv, GrvtWSEndpointType
 
 from .base import BaseExchangeClient, OrderResult, OrderInfo, query_retry
 from helpers.logger import TradingLogger
+
+# Silence very verbose GRVT SDK error logs during intentional shutdowns
+logging.getLogger("pysdk.grvt_ccxt_logging_selector").setLevel(logging.WARNING)
 
 
 class GrvtClient(BaseExchangeClient):
@@ -119,6 +123,21 @@ class GrvtClient(BaseExchangeClient):
         """Disconnect from GRVT."""
         try:
             if self._ws_client:
+                # Cancel background SDK tasks to avoid noisy shutdown logs
+                current_task = asyncio.current_task()
+                tasks_to_cancel = []
+                for task in asyncio.all_tasks():
+                    if task is current_task:
+                        continue
+                    coro = task.get_coro()
+                    qualname = getattr(coro, "__qualname__", "")
+                    if "GrvtCcxtWS._read_messages" in qualname or "GrvtCcxtWS.connect_all_channels" in qualname:
+                        task.cancel()
+                        tasks_to_cancel.append(task)
+
+                if tasks_to_cancel:
+                    await asyncio.gather(*tasks_to_cancel, return_exceptions=True)
+
                 await self._ws_client.__aexit__()
 
                 session = getattr(self._ws_client, "_session", None)
@@ -441,12 +460,22 @@ class GrvtClient(BaseExchangeClient):
     async def get_order_info(self, order_id: str = None, client_order_id: str = None) -> Optional[OrderInfo]:
         """Get order information from GRVT."""
         # Get order information using GRVT SDK
-        if order_id is not None:
-            order_data = self.rest_client.fetch_order(id=order_id)
-        elif client_order_id is not None:
-            order_data = self.rest_client.fetch_order(params={'client_order_id': client_order_id})
-        else:
-            raise ValueError("Either order_id or client_order_id must be provided")
+        try:
+            if order_id is not None:
+                order_data = self.rest_client.fetch_order(id=order_id)
+            elif client_order_id is not None:
+                order_data = self.rest_client.fetch_order(params={'client_order_id': client_order_id})
+            else:
+                raise ValueError("Either order_id or client_order_id must be provided")
+        except Exception as exc:
+            message = str(exc)
+            if "Data Not Found" in message or "404" in message:
+                self.logger.log(
+                    f"Order not found when querying info (order_id={order_id} client_order_id={client_order_id}).",
+                    "INFO"
+                )
+                return None
+            raise
 
         if not order_data or 'result' not in order_data:
             raise ValueError(f"Unable to get order info: {order_id}")
